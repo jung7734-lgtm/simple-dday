@@ -1,0 +1,14 @@
+{
+  "name": "심플 D-Day",
+  "short_name": "D-Day",
+  "description": "중요한 날짜까지 남은 날을 간단하게 확인하세요.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f8fb",
+  "theme_color": "#fff7f8",
+  "lang": "ko",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
