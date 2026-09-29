@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff7f8">
+  <meta name="description" content="간단하고 깔끔한 D-Day 날짜 카운터">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>D-Day</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --pink:#ed6b80; --pink-dark:#a9485d; --pink-light:#fff0f2;
+      --cream:#fffaf5; --ink:#59433f; --muted:#92827e; --line:#f4dfdc;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      background:
+        radial-gradient(circle at 8% 12%, #fff 0 5px, transparent 6px),
+        radial-gradient(circle at 92% 22%, #ffdadd 0 5px, transparent 6px),
+        linear-gradient(180deg,#ffe8ec 0%,#fff5f0 46%,#eef5d9 100%);
+      background-attachment:fixed;
+    }
+    main {
+      position:relative; overflow:hidden; max-width:560px; min-height:100dvh;
+      margin:0 auto; padding:max(28px,env(safe-area-inset-top)) 18px max(28px,env(safe-area-inset-bottom));
+    }
+    main::before, main::after { position:absolute; z-index:0; pointer-events:none; opacity:.65; font-size:42px; }
+    main::before { content:"🌸"; top:145px; left:-9px; transform:rotate(-18deg); }
+    main::after { content:"🌸"; top:255px; right:-8px; transform:rotate(18deg); }
+    main > * { position:relative; z-index:1; }
+    header { display:flex; align-items:center; justify-content:space-between; margin:8px 2px 5px; }
+    h1 { font-size:34px; letter-spacing:-1.2px; margin:0; color:var(--pink-dark); font-weight:800; }
+    button { font:inherit; cursor:pointer; }
+    .add-btn { width:46px; height:46px; border:0; border-radius:50%; background:var(--pink); color:white; font-size:30px; line-height:1; box-shadow:0 4px 12px #d66b7b30; }
+    .cheer-line { text-align:center; color:var(--pink); font-size:15px; font-weight:750; margin:8px 0 23px; letter-spacing:-.3px; }
+    .section-label { font-size:13px; color:#a18c88; margin:0 4px 10px; }
+    .featured {
+      background:rgba(255,253,249,.94); border:2px solid #f4d9d3; border-radius:28px;
+      padding:25px 18px 23px; text-align:center; box-shadow:0 8px 24px #9b646012; margin-bottom:18px;
+    }
+    .symbol { display:grid; place-items:center; width:58px; height:58px; border-radius:20px; background:#fff0f0; color:var(--pink); font-size:30px; margin:0 auto 12px; }
+    .featured h2 { font-size:23px; margin:0 0 8px; font-weight:800; color:#5d4843; }
+    .date { color:var(--muted); font-size:14px; }
+    .count-label { color:var(--pink); font-size:15px; font-weight:750; margin-top:22px; }
+    .count-row { display:flex; justify-content:center; align-items:center; gap:10px; }
+    .count { color:var(--pink); font-size:clamp(64px,17vw,82px); font-weight:850; line-height:1.1; letter-spacing:-3px; margin:5px 0 8px; }
+    .family-icon { font-size:30px; filter:drop-shadow(0 2px 1px #c98b8b20); }
+    .ribbon { color:#eaa1a5; font-size:20px; letter-spacing:7px; margin:13px 0 8px; }
+    .garden {
+      position:relative; display:flex; align-items:flex-end; justify-content:space-around; gap:8px;
+      min-height:170px; padding:15px 12px 13px; margin:0 0 20px; overflow:hidden;
+      border:1px solid #dfe8cb; border-radius:24px;
+      background:linear-gradient(180deg,#f8f6e9 0%,#edf4d9 72%,#dce9c2 72%,#dce9c2 100%);
+    }
+    .garden::before { content:"☁️      ☁️"; position:absolute; top:7px; left:12px; right:12px; text-align:center; font-size:19px; opacity:.75; }
+    .bunny, .cheering-person { position:relative; z-index:1; text-align:center; }
+    .bunny .art { font-size:57px; line-height:1.1; }
+    .cheering-person .art { font-size:59px; line-height:1.1; }
+    .art-caption { margin-top:4px; font-size:12px; font-weight:750; color:#8b7770; }
+    .cheer-sign { display:inline-block; background:#fffaf5; border:2px solid #eea1a5; border-radius:9px; padding:4px 7px; color:#d76577; font-size:11px; font-weight:800; transform:rotate(-5deg); margin-bottom:3px; }
+    .garden-flower { position:absolute; bottom:8px; font-size:22px; opacity:.9; }
+    .flower1 { left:9px; } .flower2 { left:45%; bottom:5px; } .flower3 { right:10px; }
+    .encouragement { text-align:center; color:#b76d79; font-weight:800; font-size:15px; margin:4px 0 22px; }
+    .list { overflow:hidden; background:rgba(255,253,249,.95); border:1px solid #f0dcd8; border-radius:22px; box-shadow:0 5px 18px #8d62620b; }
+    .event { display:flex; align-items:center; gap:13px; padding:17px 15px; }
+    .event + .event { border-top:1px solid var(--line); }
+    .event-icon { flex:0 0 46px; width:46px; height:46px; display:grid; place-items:center; border-radius:16px; background:var(--pink-light); color:var(--pink); font-size:22px; }
+    .event-main { min-width:0; flex:1; }
+    .event-title { font-size:16px; font-weight:750; overflow-wrap:anywhere; }
+    .event-date { color:var(--muted); font-size:13px; margin-top:5px; }
+    .event-count { color:var(--pink); font-size:20px; font-weight:750; white-space:nowrap; }
+    .delete-btn { border:0; background:transparent; color:#b6a4a1; font-size:22px; padding:5px 0 5px 5px; }
+    .empty { padding:28px 18px; color:var(--muted); text-align:center; font-size:14px; }
+    .note { color:#9a8c88; font-size:12px; line-height:1.6; text-align:center; margin:18px 8px 0; }
+    dialog { border:0; border-radius:22px; padding:24px; width:calc(100% - 36px); max-width:420px; box-shadow:0 18px 70px #0003; color:var(--ink); }
+    dialog::backdrop { background:#16162166; backdrop-filter:blur(3px); }
+    dialog h2 { margin:0 0 20px; font-size:21px; }
+    label { display:block; font-size:13px; color:#656872; margin:14px 0 7px; }
+    input { width:100%; border:1px solid #ead8d5; border-radius:12px; padding:13px 12px; font:inherit; font-size:16px; background:#fff; color:var(--ink); }
+    .dialog-actions { display:flex; gap:10px; margin-top:24px; }
+    .dialog-actions button { flex:1; padding:13px; border-radius:12px; border:0; font-weight:650; }
+    .cancel { background:#f6eeee; color:#655956; }
+    .save { background:var(--pink); color:white; }
+    .toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:#59433f; color:white; border-radius:30px; padding:11px 17px; font-size:13px; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .toast.show { opacity:1; }
+    @media (min-width:520px) { main { padding-top:36px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>D-Day ♡</h1>
+      <button class="add-btn" id="openAdd" aria-label="날짜 추가">+</button>
+    </header>
+    <p class="cheer-line">♡ 아빠 엄마 준영이가 항상 응원한다 ♡</p>
+    <section id="featured" class="featured" aria-live="polite"></section>
+    <div class="garden" aria-label="토끼와 응원하는 학생 그림">
+      <div class="bunny">
+        <div class="art">🐰</div>
+        <div class="art-caption">열심히 준비 중!</div>
+        <div class="art" style="font-size:27px">📚</div>
+      </div>
+      <div class="cheering-person">
+        <div class="cheer-sign">화이팅! ♡</div>
+        <div class="art">👧🏻🎀</div>
+        <div class="art-caption">꿈을 향해 한 걸음</div>
+      </div>
+      <span class="garden-flower flower1">🌼</span>
+      <span class="garden-flower flower2">🌷</span>
+      <span class="garden-flower flower3">🌸</span>
+    </div>
+    <p class="encouragement">서희의 꿈을 응원해 ♡</p>
+    <p class="section-label">내 D-Day</p>
+    <section id="eventList" class="list" aria-live="polite"></section>
+    <p class="note">날짜는 기기에 저장돼요. 앱을 다시 열어도 목록이 유지됩니다.</p>
+  </main>
+
+  <dialog id="addDialog">
+    <form id="eventForm">
+      <h2>새 D-Day 추가</h2>
+      <label for="eventName">이름</label>
+      <input id="eventName" name="eventName" maxlength="50" placeholder="예: 가족 여행" required>
+      <label for="eventDate">목표 날짜</label>
+      <input id="eventDate" name="eventDate" type="date" required>
+      <div class="dialog-actions">
+        <button type="button" class="cancel" id="cancelAdd">취소</button>
+        <button type="submit" class="save">추가하기</button>
+      </div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    const STORAGE_KEY = "simple-dday-events-v1";
+    const today = () => {
+      const d = new Date();
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    };
+    const isoLocal = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    const parseDate = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+    const dayDiff = dateString => Math.round((parseDate(dateString) - today()) / 86400000);
+    const dateLabel = s => {
+      const d = parseDate(s);
+      const weekdays = ["일","월","화","수","목","금","토"];
+      return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")} (${weekdays[d.getDay()]})`;
+    };
+    const countLabel = n => n > 0 ? `D-${n}` : n === 0 ? "D-Day" : `D+${Math.abs(n)}`;
+    const iconFor = name => /수능|시험|졸업|입학/.test(name) ? "🎓" : /여행|휴가/.test(name) ? "✈️" : /생일/.test(name) ? "♥" : "📅";
+    let events;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      events = saved ? JSON.parse(saved) : [{ id:"suhui-exam-2026", name:"수능 : 정서희", date:"2026-11-19" }];
+      if (!Array.isArray(events)) events = [];
+    } catch { events = [{ id:"suhui-exam-2026", name:"수능 : 정서희", date:"2026-11-19" }]; }
+    const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+    const sortedEvents = () => [...events].sort((a,b) => dayDiff(a.date)-dayDiff(b.date) || a.date.localeCompare(b.date));
+    const featured = document.getElementById("featured");
+    const list = document.getElementById("eventList");
+    function render() {
+      const sorted = sortedEvents();
+      if (sorted.length) {
+        const e = sorted[0], n = dayDiff(e.date);
+        featured.innerHTML = `<div class="symbol">${iconFor(e.name)}</div><h2>${escapeHtml(e.name)}</h2><div class="date">${dateLabel(e.date)}</div><div class="count-label">${n > 0 ? "목표일까지" : n === 0 ? "오늘은" : "지난 날짜"}</div><div class="count-row"><div class="count">${countLabel(n)}</div><span class="family-icon" aria-hidden="true">👨‍👩‍👦</span></div><div class="date">${n > 0 ? `${n}일 남았어요` : n === 0 ? "오늘이 목표일이에요" : `${Math.abs(n)}일 지났어요`}</div>`;
+      } else {
+        featured.innerHTML = `<div class="symbol">＋</div><h2>D-Day를 추가해 보세요</h2><div class="date">중요한 날짜를 간단하게 관리할 수 있어요.</div>`;
+      }
+      if (!sorted.length) {
+        list.innerHTML = `<div class="empty">등록된 날짜가 없어요.</div>`;
+      } else {
+        list.innerHTML = sorted.map(e => {
+          const n = dayDiff(e.date);
+          return `<div class="event"><div class="event-icon">${iconFor(e.name)}</div><div class="event-main"><div class="event-title">${escapeHtml(e.name)}</div><div class="event-date">${dateLabel(e.date)}</div></div><div class="event-count">${countLabel(n)}</div><button class="delete-btn" data-delete="${escapeHtml(e.id)}" aria-label="${escapeHtml(e.name)} 삭제" title="삭제">×</button></div>`;
+        }).join("");
+      }
+    }
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+    }
+    const dialog = document.getElementById("addDialog");
+    document.getElementById("openAdd").addEventListener("click", () => {
+      document.getElementById("eventDate").value = "";
+      dialog.showModal();
+      document.getElementById("eventName").focus();
+    });
+    document.getElementById("cancelAdd").addEventListener("click", () => dialog.close());
+    document.getElementById("eventForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const name = document.getElementById("eventName").value.trim();
+      const date = document.getElementById("eventDate").value;
+      if (!name || !date) return;
+      events.push({ id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())), name, date });
+      save(); render(); dialog.close(); e.target.reset(); showToast("D-Day를 추가했어요.");
+    });
+    list.addEventListener("click", e => {
+      const btn = e.target.closest("[data-delete]");
+      if (!btn) return;
+      const target = events.find(x => x.id === btn.dataset.delete);
+      if (!target) return;
+      if (!confirm(`'${target.name}' D-Day를 삭제할까요?`)) return;
+      events = events.filter(x => x.id !== target.id);
+      save(); render(); showToast("삭제했어요.");
+    });
+    let toastTimer;
+    function showToast(message) {
+      const el = document.getElementById("toast");
+      el.textContent = message; el.classList.add("show");
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 1800);
+    }
+    render();
+    // 앱이 자정 이후 다시 활성화되면 날짜를 다시 계산합니다.
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>
